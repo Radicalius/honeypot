@@ -1,0 +1,9 @@
+[Unit]
+Description=Telnet Honeypot
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/python3 /usr/local/lib/telnet_honeypot/telnet_honeypot.py
+
+[Install]
+WantedBy=multi-user.target
