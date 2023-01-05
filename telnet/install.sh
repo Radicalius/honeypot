@@ -1,11 +1,11 @@
 #!/bin/bash
 
-user=${whoami}
+python3 -c 'import os;open("telnet_honeypot.service", "w").write(open("telnet_honeypot.service.tmp", "r").read().replace("{{wd}}", os.getcwd()))'
 
-sudo mkdir -p /usr/local/lib/telnet_honeypot
-sudo cp telnet_honeypot.py /usr/local/lib/telnet_honeypot
+if [ ! -f /etc/systemd/system/telnet_honeypot.service ]; then
+    sudo ln -s "$(pwd)/telnet_honeypot.service" /etc/systemd/system/
+fi
 
-sudo cp telnet_honeypot.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable telnet_honeypot
-sudo systemctl start telnet_honeypot
+sudo systemctl restart telnet_honeypot
