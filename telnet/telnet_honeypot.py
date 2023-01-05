@@ -13,7 +13,7 @@ if pid > 0:
     s.close()
     sys.exit(0)
 
-log = open('./telnet_honeypot.log', 'a')
+log = open('/var/log/telnet_honeypot.log', 'a')
 
 import logging
 from twisted.internet import protocol, reactor, endpoints
@@ -92,9 +92,9 @@ class TelnetProtocol(protocol.Protocol):
             for command in data.decode().split(';'):
                 try:
                     command = command.strip()
-                    token = re.match('[A-Z]{5}', command)
-                    if token:
-                        self.transport.write(f'{token[0]}: applet not found\r\n'.encode())
+                    if re.match('.*[A-Z]{5}.*', command):
+                        token = re.findall('[A-Z]{5}', command)[0]
+                        self.transport.write(f'{token}: applet not found\r\n'.encode())
                     if '/proc/mounts' in command:
                         self.transport.write(proc_mounts)
                         self.transport.write('\r\n'.encode())
