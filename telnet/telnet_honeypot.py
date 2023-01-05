@@ -2,6 +2,7 @@ import socket, sys, os, re
 from socket import *
 
 s = socket(AF_INET, SOCK_STREAM)
+s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 s.setblocking(False)
 s.bind(('0.0.0.0', 23))
 s.listen(SOMAXCONN)
