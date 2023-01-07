@@ -2,6 +2,7 @@
 Description=Telnet Honeypot
 
 [Service]
+Environment=WORKING_DIRECTORY={{wd}}
 Type=forking
 ExecStart=/usr/bin/python3 {{wd}}/telnet_honeypot.py
 

@@ -1,10 +1,12 @@
-import socket, sys, os, re
+import socket, sys, os, re, base64
 from socket import *
+
+wd = os.environ.get('WORKING_DIRECTORY') or os.getcwd()
 
 s = socket(AF_INET, SOCK_STREAM)
 s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 s.setblocking(False)
-s.bind(('0.0.0.0', 23))
+s.bind(('0.0.0.0', 2300))
 s.listen(SOMAXCONN)
 
 pid = os.fork()
@@ -13,54 +15,19 @@ if pid > 0:
     s.close()
     sys.exit(0)
 
-log = open('/var/log/telnet_honeypot.log', 'a')
-
 import logging
 from twisted.internet import protocol, reactor, endpoints
 
 os.setuid(1000)
 
+log = open(f'{wd}/telnet_honeypot.log', 'a')
 logging.basicConfig(level=logging.DEBUG, stream=log, format='[%(asctime)s] %(message)s')
 
 prompt = b'/ # '
-proc_mounts = '''
-proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
-tmpfs /dev tmpfs rw,nosuid,size=65536k,mode=755,inode64 0 0
-devpts /dev/pts devpts rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=666 0 0
-sysfs /sys sysfs ro,nosuid,nodev,noexec,relatime 0 0
-tmpfs /sys/fs/cgroup tmpfs rw,nosuid,nodev,noexec,relatime,mode=755,inode64 0 0
-cgroup /sys/fs/cgroup/systemd cgroup ro,nosuid,nodev,noexec,relatime,xattr,name=systemd 0 0
-cgroup /sys/fs/cgroup/pids cgroup ro,nosuid,nodev,noexec,relatime,pids 0 0
-cgroup /sys/fs/cgroup/cpuset cgroup ro,nosuid,nodev,noexec,relatime,cpuset 0 0
-cgroup /sys/fs/cgroup/cpu,cpuacct cgroup ro,nosuid,nodev,noexec,relatime,cpu,cpuacct 0 0
-cgroup /sys/fs/cgroup/hugetlb cgroup ro,nosuid,nodev,noexec,relatime,hugetlb 0 0
-cgroup /sys/fs/cgroup/freezer cgroup ro,nosuid,nodev,noexec,relatime,freezer 0 0
-cgroup /sys/fs/cgroup/perf_event cgroup ro,nosuid,nodev,noexec,relatime,perf_event 0 0
-cgroup /sys/fs/cgroup/net_cls,net_prio cgroup ro,nosuid,nodev,noexec,relatime,net_cls,net_prio 0 0
-cgroup /sys/fs/cgroup/misc cgroup ro,nosuid,nodev,noexec,relatime,misc 0 0
-cgroup /sys/fs/cgroup/rdma cgroup ro,nosuid,nodev,noexec,relatime,rdma 0 0
-cgroup /sys/fs/cgroup/devices cgroup ro,nosuid,nodev,noexec,relatime,devices 0 0
-cgroup /sys/fs/cgroup/blkio cgroup ro,nosuid,nodev,noexec,relatime,blkio 0 0
-cgroup /sys/fs/cgroup/memory cgroup ro,nosuid,nodev,noexec,relatime,memory 0 0
-mqueue /dev/mqueue mqueue rw,nosuid,nodev,noexec,relatime 0 0
-shm /dev/shm tmpfs rw,nosuid,nodev,noexec,relatime,size=65536k,inode64 0 0
-/dev/sdb2 /etc/resolv.conf ext4 rw,relatime,errors=remount-ro 0 0
-/dev/sdb2 /etc/hostname ext4 rw,relatime,errors=remount-ro 0 0
-/dev/sdb2 /etc/hosts ext4 rw,relatime,errors=remount-ro 0 0
-devpts /dev/console devpts rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=666 0 0
-proc /proc/bus proc ro,nosuid,nodev,noexec,relatime 0 0
-proc /proc/fs proc ro,nosuid,nodev,noexec,relatime 0 0
-proc /proc/irq proc ro,nosuid,nodev,noexec,relatime 0 0
-proc /proc/sys proc ro,nosuid,nodev,noexec,relatime 0 0
-proc /proc/sysrq-trigger proc ro,nosuid,nodev,noexec,relatime 0 0
-tmpfs /proc/asound tmpfs ro,relatime,inode64 0 0
-tmpfs /proc/acpi tmpfs ro,relatime,inode64 0 0
-tmpfs /proc/kcore tmpfs rw,nosuid,size=65536k,mode=755,inode64 0 0
-tmpfs /proc/keys tmpfs rw,nosuid,size=65536k,mode=755,inode64 0 0
-tmpfs /proc/timer_list tmpfs rw,nosuid,size=65536k,mode=755,inode64 0 0
-tmpfs /proc/scsi tmpfs ro,relatime,inode64 0 0
-tmpfs /sys/firmware tmpfs ro,relatime,inode64 0 0
-'''.strip().encode()
+proc_mounts = base64.b64decode(open(f'{wd}/data/proc_mounts.b64').read())
+wget_help = base64.b64decode(open(f'{wd}/data/wget_help.b64').read())
+echo_binary = base64.b64decode(open(f'{wd}/data/echo.b64').read())
+busybox_binary = base64.b64decode(open(f'{wd}/data/busybox.b64').read())
 
 class TelnetProtocol(protocol.Protocol):
 
@@ -84,20 +51,38 @@ class TelnetProtocol(protocol.Protocol):
             self.mode = 'password'
         elif self.mode == 'password':
             self.transport.write(prompt)
-            logging.info(f'{self.transport.getPeer().host}: login ({self.username.decode()}. {data.decode()})')
+            logging.info(f'{self.transport.getPeer().host}: login ({self.username.decode()}, {data.decode()})')
             self.mode = 'commands'
         elif self.mode == 'commands':
-            logging.info(f'{self.transport.getPeer().host}: > {data.decode()}')
+            try:
+                data = data.decode()
+            except:
+                logging.warning(f'{self.transport.getPeer().host}: Undecodable command received: {data}')
+                return
 
-            for command in data.decode().split(';'):
+            logging.info(f'{self.transport.getPeer().host}: > {data}')
+
+            for command in data.split(';'):
                 try:
                     command = command.strip()
-                    if re.match('.*[A-Z]{5}.*', command):
-                        token = re.findall('[A-Z]{5}', command)[0]
+                    if re.match('.*[A-Z]{5,6}.*', command):
+                        token = re.findall('[A-Z]{5,6}', command)[0]
                         self.transport.write(f'{token}: applet not found\r\n'.encode())
                     if '/proc/mounts' in command:
                         self.transport.write(proc_mounts)
                         self.transport.write('\r\n'.encode())
+                    if re.match(r'.*echo -ne \'(\\x[0-9a-f]{2})+\'', command):
+                        for digit in re.findall(r'\\x[0-9a-f]{2}', command):
+                            digit = digit.replace('\\x', '')
+                            self.transport.write(chr(int(digit, 16)).encode())
+                        self.transport.write(b'\r\n')
+                    if command == 'tftp':
+                        self.transport.write('tftp: applet not found\r\n'.encode())
+                    if command == 'wget':
+                        self.transport.write(wget_help)
+                        self.transport.write('\r\n'.encode())
+                    if 'dd' in command and 'if=.s' in command and 'cat .s' in command:
+                        self.transport.write(echo_binary)
                 except:
                     logging.exception(f'Error when parsing command {data.decode()}: ')
 
