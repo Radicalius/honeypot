@@ -2,11 +2,12 @@ import socket, sys, os, re, base64
 from socket import *
 
 wd = os.environ.get('WORKING_DIRECTORY') or os.getcwd()
+port = 23 if os.getuid() == 0 else 2300
 
 s = socket(AF_INET, SOCK_STREAM)
 s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 s.setblocking(False)
-s.bind(('0.0.0.0', 2300))
+s.bind(('0.0.0.0', port))
 s.listen(SOMAXCONN)
 
 pid = os.fork()
@@ -18,6 +19,7 @@ if pid > 0:
 import logging
 from twisted.internet import protocol, reactor, endpoints
 
+os.setgid(1000)
 os.setuid(1000)
 
 log = open(f'{wd}/telnet_honeypot.log', 'a')
