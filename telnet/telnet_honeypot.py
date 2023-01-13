@@ -85,6 +85,7 @@ class TelnetProtocol(protocol.Protocol):
                         self.transport.write('\r\n'.encode())
                     if 'dd' in command and 'if=.s' in command and 'cat .s' in command:
                         self.transport.write(echo_binary)
+                        self.transport.write('\r\n'.encode())
                 except:
                     logging.exception(f'Error when parsing command {data.decode()}: ')
 
