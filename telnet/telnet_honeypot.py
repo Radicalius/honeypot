@@ -22,7 +22,7 @@ from twisted.internet import protocol, reactor, endpoints
 os.setgid(1000)
 os.setuid(1000)
 
-log = open(f'{wd}/telnet_honeypot.log', 'a')
+log = open(f'{wd}/telnet.log', 'a')
 logging.basicConfig(level=logging.DEBUG, stream=log, format='[%(asctime)s] %(message)s')
 
 prompt = b'/ # '

@@ -1,0 +1,10 @@
+[Unit]
+Description=Ftp Honeypot
+
+[Service]
+Environment=WORKING_DIRECTORY={{wd}}
+Type=forking
+ExecStart=/usr/bin/python3 {{wd}}/ftp_honeypot.py
+
+[Install]
+WantedBy=multi-user.target

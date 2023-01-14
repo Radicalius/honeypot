@@ -6,6 +6,8 @@ if [ ! -f /etc/systemd/system/telnet_honeypot.service ]; then
     sudo ln -s "$(pwd)/telnet_honeypot.service" /etc/systemd/system/
 fi
 
+sudo mkdir -p /var/log/honeypots
+
 sudo systemctl daemon-reload
 sudo systemctl enable telnet_honeypot
 sudo systemctl restart telnet_honeypot
