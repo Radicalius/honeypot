@@ -9,9 +9,9 @@ fi
 sudo mkdir -p /var/log/honeypots
 
 sudo systemctl daemon-reload
-sudo systemctl enable telnet_honeypot
-sudo systemctl restart telnet_honeypot
+sudo systemctl enable http_honeypot
+sudo systemctl restart http_honeypot
 
-sudo rm /etc/nginx/sites-enabled
+sudo rm /etc/nginx/sites-enabled/default
 sudo ln -s "$(pwd)/nginx.conf" /etc/nginx/sites-enabled/nginx.conf
 sudo systemctl reload nginx
