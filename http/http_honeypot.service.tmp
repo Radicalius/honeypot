@@ -1,0 +1,10 @@
+[Unit]
+Description=Telnet Honeypot
+
+[Service]
+User={{user}}
+Environment=WORKING_DIRECTORY={{wd}}
+ExecStart=cd {{wd}} && /usr/bin/python3 -m gunicorn http_honeypot:app
+
+[Install]
+WantedBy=multi-user.target

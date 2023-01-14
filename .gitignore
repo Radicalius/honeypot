@@ -1,3 +1,4 @@
 */**/*.log
 *.pem
 secrets.env
+*/**/__pycache__/*
