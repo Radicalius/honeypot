@@ -12,6 +12,12 @@ sudo systemctl daemon-reload
 sudo systemctl enable http_honeypot
 sudo systemctl restart http_honeypot
 
-sudo rm /etc/nginx/sites-enabled/default
-sudo ln -s "$(pwd)/nginx.conf" /etc/nginx/sites-enabled/nginx.conf
+if [ -f /etc/nginx/sites-enabled/default ]; then
+    sudo rm /etc/nginx/sites-enabled/default
+fi
+
+if [ ! -f /etc/nginx/sites-enabled/nginx.conf ]; then
+    sudo ln -s "$(pwd)/nginx.conf" /etc/nginx/sites-enabled/nginx.conf
+fi
+
 sudo systemctl reload nginx
