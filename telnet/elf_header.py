@@ -57,9 +57,7 @@ types = {
     "ET_CORE":     4 # Core file
 }
 
-elf_template = base64.b64decode(open('data/echo.b64').read())
-
-def random_elf_header():
+def random_elf_header(elf_template):
     endianness, endian_byte = random.choice(list(endian.items()))
     architecture, arch_code = random.choice(list(archs.items()))
     elf = bytearray(elf_template)

@@ -30,7 +30,8 @@ logging.basicConfig(level=logging.DEBUG, stream=log, format='[%(asctime)s] %(mes
 prompt = b'/ # '
 proc_mounts = base64.b64decode(open(f'{wd}/data/proc_mounts.b64').read())
 wget_help = base64.b64decode(open(f'{wd}/data/wget_help.b64').read())
-busybox_binary = base64.b64decode(open(f'{wd}/data/busybox.b64').read())
+# busybox_binary = base64.b64decode(open(f'{wd}/data/busybox.b64').read())
+elf_template = base64.b64decode(open(f'{wd}/data/echo.b64').read())
 
 class TelnetProtocol(protocol.Protocol):
 
@@ -85,7 +86,7 @@ class TelnetProtocol(protocol.Protocol):
                         self.transport.write(wget_help)
                         self.transport.write('\r\n'.encode())
                     if 'dd' in command and 'if=.s' in command and 'cat .s' in command:
-                        elf_header, endian, arch = random_elf_header()
+                        elf_header, endian, arch = random_elf_header(elf_template)
                         logging.info(f'{self.transport.getPeer().host}: masquerading as ({endian}, {arch})')
                         self.transport.write(elf_header)
                         self.transport.write('\r\n'.encode())
