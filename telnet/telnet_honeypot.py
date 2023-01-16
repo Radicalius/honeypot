@@ -1,6 +1,8 @@
 import socket, sys, os, re, base64
 from socket import *
 
+from elf_header import random_elf_header
+
 wd = os.environ.get('WORKING_DIRECTORY') or os.getcwd()
 port = 23 if os.getuid() == 0 else 2300
 
@@ -28,7 +30,6 @@ logging.basicConfig(level=logging.DEBUG, stream=log, format='[%(asctime)s] %(mes
 prompt = b'/ # '
 proc_mounts = base64.b64decode(open(f'{wd}/data/proc_mounts.b64').read())
 wget_help = base64.b64decode(open(f'{wd}/data/wget_help.b64').read())
-echo_binary = base64.b64decode(open(f'{wd}/data/echo.b64').read())
 busybox_binary = base64.b64decode(open(f'{wd}/data/busybox.b64').read())
 
 class TelnetProtocol(protocol.Protocol):
@@ -73,7 +74,7 @@ class TelnetProtocol(protocol.Protocol):
                     if '/proc/mounts' in command:
                         self.transport.write(proc_mounts)
                         self.transport.write('\r\n'.encode())
-                    if re.match(r'.*echo -ne \'(\\x[0-9a-f]{2})+\'', command):
+                    if re.match(r'.*echo -n?e \'(\\x[0-9a-f]{2})+\'', command):
                         for digit in re.findall(r'\\x[0-9a-f]{2}', command):
                             digit = digit.replace('\\x', '')
                             self.transport.write(chr(int(digit, 16)).encode())
@@ -84,10 +85,12 @@ class TelnetProtocol(protocol.Protocol):
                         self.transport.write(wget_help)
                         self.transport.write('\r\n'.encode())
                     if 'dd' in command and 'if=.s' in command and 'cat .s' in command:
-                        self.transport.write(echo_binary)
+                        elf_header, endian, arch = random_elf_header()
+                        logging.info(f'{self.transport.getPeer().host}: masquerading as ({endian}, {arch})')
+                        self.transport.write(elf_header)
                         self.transport.write('\r\n'.encode())
                 except:
-                    logging.exception(f'Error when parsing command {data.decode()}: ')
+                    logging.exception(f'Error when parsing command {data}: ')
 
             self.transport.write(prompt)
 
