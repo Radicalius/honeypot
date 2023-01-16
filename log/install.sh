@@ -1,3 +1,7 @@
 #!/bin/bash
 
-cp log.py ../telnet/log.py
+for dir in $(ls -d ../*/); do
+    if [ dir != '../log/' ]; then
+        ln -s "$(pwd)/log.py" "${dir}log_.py"
+    fi
+done

@@ -1,18 +1,20 @@
-import flask, os, logging, base64
+import flask, os, base64
 from flask import Flask, request, Response
+
+from log_ import Logger
+logger = Logger("http")
+
 app = Flask(__name__)
 
 wd = os.environ.get('WORKING_DIRECTORY') or os.getcwd()
-
-log = open(f'{wd}/http.log', 'a')
-logging.basicConfig(level=logging.DEBUG, stream=log, format='[%(asctime)s] %(message)s')
 
 laravel6_env_data = base64.b64decode(open(f'{wd}/data/laravel6.env.b64').read())
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path):
-    logging.info(f'{request.headers.get("X-Remote-IP")} - {request.method} {request.path}\n{request.headers}\n{request.data}')
+    headers = {k: v for k,v in request.headers}
+    logger.info(ip=request.headers.get("X-Remote-IP"), method=request.method, path=request.path, headers=headers, data=request.data.decode())
     
     if request.path == '/.env':
         resp = Response(laravel6_env_data)

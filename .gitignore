@@ -2,3 +2,4 @@
 *.pem
 secrets.env
 */**/__pycache__/*
+*/**/log_.py

@@ -18,7 +18,7 @@ if pid > 0:
 
 from twisted.internet import protocol, reactor, endpoints
 
-from log import Logger
+from log_ import Logger
 from elf_header import random_elf_header
 
 os.setgid(1000)
