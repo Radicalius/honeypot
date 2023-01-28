@@ -1,0 +1,24 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+  
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Credentials
+        run: |
+          echo "$KEY_FILE_PEM" > honeypot.pem
+          echo "SECRETS_ENV_FILE" > secrets.env
+        env:
+          KEY_FILE_PEM: ${{ secrets.KEY_FILE_PEM }}
+          SECRETS_ENV_FILE: ${{ secrets.SECRETS_ENV_FILE }}
+      - name: Setup Go environment
+        uses: actions/setup-go@v3.5.0
+      - name: Deploy
+        run: bash deploy.sh
+        
+    
