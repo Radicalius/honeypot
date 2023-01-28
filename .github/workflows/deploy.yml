@@ -9,6 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Fetch Credentials
         run: |
           echo "$KEY_FILE_PEM" > honeypot.pem
