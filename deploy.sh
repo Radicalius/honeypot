@@ -8,7 +8,7 @@ command() {
 
 for dir in `ls ./modules`; do
     cd "modules/$dir" && \
-    CGO_ENABLED=0 go build -a -installsuffix cgo "${dir}_honeypot.go" && \
+    CGO_ENABLED=0 go build -a -installsuffix cgo && \
     cd "../.." && \
     command "sudo rm -rf /usr/local/bin/${dir}_honeypot" && \
     command "rm -rf ~/staging/${dir}" && \
