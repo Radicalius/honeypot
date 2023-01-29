@@ -13,6 +13,7 @@ jobs:
       - name: Fetch Credentials
         run: |
           echo "$KEY_FILE_PEM" > honeypot.pem
+          chmod 400 honeypot.pem
           echo "$SECRETS_ENV_FILE" > secrets.env
         env:
           KEY_FILE_PEM: ${{ secrets.KEY_FILE_PEM }}
