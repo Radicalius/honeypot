@@ -5,3 +5,5 @@ directory="/usr/local/bin/${RC_SVCNAME}"
 command_user="honeypot:honeypot"
 command_background=true
 pidfile="/run/${RC_SVCNAME}.pid"
+output_log="/home/honeypot/${RC_SVCNAME}.log"
+error_log="/home/honeypot/${RC_SVCNAME}.err"
