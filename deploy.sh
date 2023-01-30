@@ -6,13 +6,13 @@ command() {
     ssh -o StrictHostKeychecking=no -i "$PEM_FILE" "$USERNAME@$HOST_IP" $1
 }
 
-for dir in `ls ./modules`; do
-    cd "modules/$dir" && \
+for dir in `ls ./services`; do
+    cd "services/$dir" && \
     CGO_ENABLED=0 go build -a -installsuffix cgo && \
     cd "../.." && \
     command "sudo rm -rf /usr/local/bin/${dir}_honeypot" && \
     command "rm -rf ~/staging/${dir}" && \
-    scp -o StrictHostKeychecking=no -r -i "$PEM_FILE" "modules/${dir}" "$USERNAME@$HOST_IP:~/staging" && \
+    scp -o StrictHostKeychecking=no -r -i "$PEM_FILE" "services/${dir}" "$USERNAME@$HOST_IP:~/staging" && \
     command "sudo mv ~/staging/${dir} /usr/local/bin" && \
     command "sudo mv /usr/local/bin/${dir} /usr/local/bin/${dir}_honeypot" && \
     command "sudo chmod a+x /usr/local/bin/${dir}_honeypot/${dir}_honeypot"
