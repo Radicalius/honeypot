@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
+	"strings"
 )
 
 type LogRequest struct {
@@ -31,9 +34,35 @@ type Logger struct {
 	Session *string
 }
 
-func (logger *Logger) Log(message interface{}) {
+type LogMessage interface {
+	IpAddress() string
+}
+
+func (logger *Logger) Log(message LogMessage) {
+
+	env, exists := os.LookupEnv("Environment")
+	if !exists || env != "Production" {
+		fmt.Println("WARNING: Non-production Environment.  Skipping Log Message.")
+		return
+	}
+
+	exclude, exists := os.LookupEnv("ExcludedIPs")
+	if exists {
+		for _, ip := range strings.Split(exclude, ",") {
+			if strings.Contains(message.IpAddress(), ip) {
+				fmt.Println("WARNING: skipped log message because of ip filter: " + ip)
+				return
+			}
+		}
+	}
+
+	logServerBaseUrl, exists := os.LookupEnv("LogServerBaseURL")
+	if !exists {
+		log.Fatal("LogServerBaseURL is a required envvar")
+	}
+
 	if logger.Session == nil {
-		if !logger.initLogSession() {
+		if !logger.initLogSession(logServerBaseUrl) {
 			return
 		}
 	}
@@ -56,9 +85,7 @@ func (logger *Logger) Log(message interface{}) {
 		return
 	}
 
-	fmt.Println(string(logData))
-
-	resp, err2 := http.Post("http://localhost:25302/v1/log", "application/json", bytes.NewReader(logData))
+	resp, err2 := http.Post(logServerBaseUrl+"/v1/log", "application/json", bytes.NewReader(logData))
 	if err2 != nil {
 		fmt.Println(err2)
 		return
@@ -81,7 +108,7 @@ func (logger *Logger) Log(message interface{}) {
 	}
 }
 
-func (logger *Logger) initLogSession() bool {
+func (logger *Logger) initLogSession(logServerBaseUrl string) bool {
 	request := &LogStreamRequest{
 		Service: *logger.Service,
 	}
@@ -91,7 +118,7 @@ func (logger *Logger) initLogSession() bool {
 		return false
 	}
 
-	resp, err2 := http.Post("http://localhost:25302/v1/log-stream", "application/json", bytes.NewReader(body))
+	resp, err2 := http.Post(logServerBaseUrl+"/v1/log-stream", "application/json", bytes.NewReader(body))
 	if err2 != nil {
 		fmt.Println(err)
 		return false

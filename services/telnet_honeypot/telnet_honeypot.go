@@ -6,6 +6,7 @@ import (
 	"logging"
 	"net"
 	"os"
+	"strings"
 )
 
 type TelnetLog struct {
@@ -14,6 +15,10 @@ type TelnetLog struct {
 	Password string
 	Action   string
 	Command  *string
+}
+
+func (log *TelnetLog) IpAddress() string {
+	return strings.Split(log.Ip, ":")[0]
 }
 
 var serviceName string = "telnet"
