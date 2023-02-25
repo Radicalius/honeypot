@@ -1,2 +1,4 @@
 *.pem
 secrets.env
+appsettings.dev.env
+services/**/*_honeypot

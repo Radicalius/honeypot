@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"logging"
 )
@@ -14,6 +15,10 @@ type LogMessage struct {
 	Headers map[string]string
 	Body    string
 	Ip      string
+}
+
+func (message *LogMessage) IpAddress() string {
+	return strings.Split(message.Ip, ":")[0]
 }
 
 var log *logging.Logger
@@ -41,6 +46,7 @@ func catchAll(w http.ResponseWriter, req *http.Request) {
 		string(body),
 		req.RemoteAddr,
 	})
+
 	w.WriteHeader(404)
 	w.Write([]byte("404: File not found."))
 }

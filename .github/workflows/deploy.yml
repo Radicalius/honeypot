@@ -18,6 +18,13 @@ jobs:
         env:
           KEY_FILE_PEM: ${{ secrets.KEY_FILE_PEM }}
           SECRETS_ENV_FILE: ${{ secrets.SECRETS_ENV_FILE }}
+      - name: Add Secrets to appsettings
+        run: |
+          echo "export ExcludedIPs=$EXCLUDED_IPS" >> appsettings.json
+          echo "export AbuseIPDBKey=$ABUSE_IPDB_KEY" >> appsettings.json
+        env:
+          EXCLUDED_IPS: ${{ secrets.EXCLUDED_IPS }}
+          ABUSE_IPDB_KEY: ${{ secrets.ABUSE_IPDB_KEY }}
       - name: Setup Go environment
         uses: actions/setup-go@v3.5.0
       - name: Deploy
