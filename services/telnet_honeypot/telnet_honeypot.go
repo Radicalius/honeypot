@@ -6,6 +6,7 @@ import (
 	"logging"
 	"net"
 	"os"
+	"reporting"
 	"strings"
 )
 
@@ -44,12 +45,16 @@ func handleRequest(conn net.Conn) {
 		}
 
 		n, err = conn.Read(data)
-		dataStr := string(data[:n-1])
+		if n == 0 {
+			continue
+		}
 
 		if err != nil {
 			fmt.Errorf("Error parsing message %s", err.Error())
 			continue
 		}
+
+		dataStr := string(data[:n-1])
 
 		if state == "username" {
 			username = dataStr
@@ -58,12 +63,19 @@ func handleRequest(conn net.Conn) {
 			password = dataStr
 			state = "command"
 		} else {
-			logger.Log(&TelnetLog{
+			data := &TelnetLog{
 				Ip:       conn.RemoteAddr().String(),
 				Username: username,
 				Password: password,
 				Action:   state,
 				Command:  &dataStr,
+			}
+
+			logger.Log(data)
+			reporting.ReportIp(reporting.IpReport{
+				Service: "telnet",
+				Ip:      data.IpAddress(),
+				Data:    data,
 			})
 		}
 	}
