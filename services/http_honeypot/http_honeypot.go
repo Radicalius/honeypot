@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"logging"
+	"reporting"
 )
 
 type LogMessage struct {
@@ -39,12 +40,20 @@ func catchAll(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Log(&LogMessage{
+	data := &LogMessage{
 		req.Method,
 		req.RequestURI,
 		headersToMap(req.Header),
 		string(body),
 		req.RemoteAddr,
+	}
+
+	log.Log(data)
+
+	reporting.ReportIp(reporting.IpReport{
+		Service: "http",
+		Ip:      data.IpAddress(),
+		Data:    data,
 	})
 
 	w.WriteHeader(404)
