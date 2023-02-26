@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 )
 
 type IpReport struct {
@@ -17,6 +18,7 @@ type IpReport struct {
 }
 
 var client = &http.Client{}
+var deduplicate = make(map[string]int64)
 
 func ReportIp(report IpReport) {
 
@@ -85,7 +87,7 @@ func ValidateRequest(reportIp string) bool {
 	}
 
 	exclude, exists := os.LookupEnv("ExcludedIPs")
-	if exists {
+	if exists && exclude != "" {
 		for _, ip := range strings.Split(exclude, ",") {
 			if strings.Contains(reportIp, ip) {
 				fmt.Println("WARNING: skipped report because of ip filter: " + ip)
@@ -94,5 +96,10 @@ func ValidateRequest(reportIp string) bool {
 		}
 	}
 
+	if deduplicate[reportIp] > (time.Now().Unix() - 3600) {
+		return false
+	}
+
+	deduplicate[reportIp] = time.Now().Unix()
 	return true
 }

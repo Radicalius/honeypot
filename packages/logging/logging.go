@@ -47,7 +47,7 @@ func (logger *Logger) Log(message LogMessage) {
 	}
 
 	exclude, exists := os.LookupEnv("ExcludedIPs")
-	if exists {
+	if exists && exclude != "" {
 		for _, ip := range strings.Split(exclude, ",") {
 			if strings.Contains(message.IpAddress(), ip) {
 				fmt.Println("WARNING: skipped log message because of ip filter: " + ip)
