@@ -6,6 +6,7 @@ import (
 	"logging"
 	"net"
 	"os"
+	"reporting"
 	"strings"
 )
 
@@ -58,12 +59,19 @@ func handleRequest(conn net.Conn) {
 			password = dataStr
 			state = "command"
 		} else {
-			logger.Log(&TelnetLog{
+			data := &TelnetLog{
 				Ip:       conn.RemoteAddr().String(),
 				Username: username,
 				Password: password,
 				Action:   state,
 				Command:  &dataStr,
+			}
+
+			logger.Log(data)
+			reporting.ReportIp(reporting.IpReport{
+				Service: "telnet",
+				Ip:      data.IpAddress(),
+				Data:    data,
 			})
 		}
 	}
