@@ -45,12 +45,16 @@ func handleRequest(conn net.Conn) {
 		}
 
 		n, err = conn.Read(data)
-		dataStr := string(data[:n-1])
+		if n == 0 {
+			continue
+		}
 
 		if err != nil {
 			fmt.Errorf("Error parsing message %s", err.Error())
 			continue
 		}
+
+		dataStr := string(data[:n-1])
 
 		if state == "username" {
 			username = dataStr
