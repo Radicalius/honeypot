@@ -7,7 +7,7 @@ command() {
 }
 
 copy() {
-    scp -o StrictHostKeychecking=no -r -i "$PEM_FILE" -p $PORT "$1" "$USERNAME@$HOST_IP:$2"
+    scp -o StrictHostKeychecking=no -r -i "$PEM_FILE" -P $PORT "$1" "$USERNAME@$HOST_IP:$2"
 }
 
 for dir in `ls ./services`; do
