@@ -76,13 +76,11 @@ func handleRequest(conn net.Conn) {
 
 		logger.Log(logData)
 
-		if username != "" && password != "" {
-			reporting.ReportIp(reporting.IpReport{
-				Service: serviceName,
-				Ip:      logData.IpAddress(),
-				Data:    logData,
-			})
-		}
+		reporting.ReportIp(reporting.IpReport{
+			Service: serviceName,
+			Ip:      logData.IpAddress(),
+			Data:    logData,
+		})
 	}
 }
 
