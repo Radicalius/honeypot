@@ -2,3 +2,4 @@
 secrets.env
 appsettings.dev.env
 services/*_honeypot/*_honeypot
+services/*_server/*_server
