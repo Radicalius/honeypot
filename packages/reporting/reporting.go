@@ -34,10 +34,10 @@ func AbuseIpDbReport(report IpReport) {
 	var abuseIpDbCategories string
 	if report.Service == "http" {
 		abuseIpDbCategories = "21"
-	}
-
-	if report.Service == "telnet" {
+	} else if report.Service == "telnet" {
 		abuseIpDbCategories = "18,23"
+	} else if report.Service == "ftp" {
+		abuseIpDbCategories = "5,18"
 	}
 
 	comment, err := json.Marshal(report.Data)

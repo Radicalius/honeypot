@@ -3,11 +3,11 @@
 . secrets.env
 
 command() {
-    ssh -o StrictHostKeychecking=no -i "$PEM_FILE" "$USERNAME@$HOST_IP" $1
+    ssh -o StrictHostKeychecking=no -i "$PEM_FILE" -p $PORT "$USERNAME@$HOST_IP" $1
 }
 
 copy() {
-    scp -o StrictHostKeychecking=no -r -i "$PEM_FILE" "$1" "$USERNAME@$HOST_IP:$2"
+    scp -o StrictHostKeychecking=no -r -i "$PEM_FILE" -P $PORT "$1" "$USERNAME@$HOST_IP:$2"
 }
 
 for dir in `ls ./services`; do

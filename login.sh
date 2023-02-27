@@ -2,4 +2,4 @@
 
 . secrets.env
 
-ssh -i "$PEM_FILE" "$USERNAME@$HOST_IP"
+ssh -i "$PEM_FILE" -p $PORT "$USERNAME@$HOST_IP"
