@@ -15,9 +15,13 @@ jobs:
           echo "$KEY_FILE_PEM" > honeypot.pem
           chmod 400 honeypot.pem
           echo "$SECRETS_ENV_FILE" > secrets.env
+          echo "$FTP_SERVER_CERT" > services/ftp_honeypot/server.cert
+          echo "$FTP_SERVER_KEY" > services/ftp_honeypot/server.key 
         env:
           KEY_FILE_PEM: ${{ secrets.KEY_FILE_PEM }}
           SECRETS_ENV_FILE: ${{ secrets.SECRETS_ENV_FILE }}
+          FTP_SERVER_CERT: ${{ secrets.FTP_SERVER_CERT }}
+          FTP_SERVER_KEY: ${{ secrets.FTP_SERVER_KEY }}
       - name: Add Secrets to appsettings
         run: |
           echo "export ExcludedIPs=\"$EXCLUDED_IPS\"" >> appsettings.env
