@@ -70,21 +70,6 @@ func handleRequest(conn net.Conn) {
 			password = dataStr
 			state = "command"
 		} else {
-			data := &TelnetLog{
-				Ip:       conn.RemoteAddr().String(),
-				Username: username,
-				Password: password,
-				Action:   state,
-				Command:  &dataStr,
-			}
-
-			logger.Log(data)
-			reporting.ReportIp(reporting.IpReport{
-				Service: "telnet",
-				Ip:      data.IpAddress(),
-				Data:    data,
-			})
-
 			for _, command := range strings.Split(dataStr, ";") {
 				command = strings.Trim(command, " \t\n\r")
 
@@ -127,6 +112,24 @@ func handleRequest(conn net.Conn) {
 					conn.Close()
 				}
 			}
+		}
+
+		logData := &TelnetLog{
+			Ip:       conn.RemoteAddr().String(),
+			Username: username,
+			Password: password,
+			Action:   state,
+			Command:  &dataStr,
+		}
+
+		logger.Log(logData)
+
+		if username != "" && password != "" {
+			reporting.ReportIp(reporting.IpReport{
+				Service: "telnet",
+				Ip:      logData.IpAddress(),
+				Data:    logData,
+			})
 		}
 	}
 }
