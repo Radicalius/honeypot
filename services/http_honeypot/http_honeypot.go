@@ -50,11 +50,13 @@ func catchAll(w http.ResponseWriter, req *http.Request) {
 
 	log.Log(data)
 
-	reporting.ReportIp(reporting.IpReport{
-		Service: "http",
-		Ip:      data.IpAddress(),
-		Data:    data,
-	})
+	if data.Path != "/" || data.Body != "" {
+		reporting.ReportIp(reporting.IpReport{
+			Service: "http",
+			Ip:      data.IpAddress(),
+			Data:    data,
+		})
+	}
 
 	w.WriteHeader(404)
 	w.Write([]byte("404: File not found."))

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"log"
 	"logging"
@@ -12,6 +13,8 @@ import (
 
 var serviceName string = "ftp"
 var logger logging.Logger
+
+var TLSconfig *tls.Config
 
 type FtpLog struct {
 	Ip       string
@@ -50,8 +53,6 @@ func handleRequest(conn net.Conn) {
 		parts := strings.Split(dataStr, " ")
 		command := parts[0]
 
-		fmt.Println(command)
-
 		if command == "USER" {
 			username = parts[1]
 			conn.Write([]byte("331 Please specify the password.\r\n"))
@@ -63,6 +64,11 @@ func handleRequest(conn net.Conn) {
 		} else if command == "CLOSE" || command == "EXIT" || command == "QUIT" {
 			conn.Write([]byte("221 Goodbye.\r\n"))
 			conn.Close()
+		} else if command == "AUTH" {
+			conn.Write([]byte("234 Success.\r\n"))
+			tlsConn := tls.Server(conn, TLSconfig)
+			tlsConn.Handshake()
+			conn = net.Conn(tlsConn)
 		} else {
 			conn.Write([]byte("500 Invalid command.\r\n"))
 		}
@@ -76,15 +82,28 @@ func handleRequest(conn net.Conn) {
 
 		logger.Log(logData)
 
-		reporting.ReportIp(reporting.IpReport{
-			Service: serviceName,
-			Ip:      logData.IpAddress(),
-			Data:    logData,
-		})
+		if username != "" && password != "" {
+			reporting.ReportIp(reporting.IpReport{
+				Service: serviceName,
+				Ip:      logData.IpAddress(),
+				Data:    logData,
+			})
+		}
 	}
 }
 
 func main() {
+
+	cert, err := tls.LoadX509KeyPair("server.cert", "server.key")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	TLSconfig = &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		ClientAuth:   tls.VerifyClientCertIfGiven,
+		ServerName:   "example.com"}
+
 	logger = logging.Logger{
 		Service: &serviceName,
 	}
