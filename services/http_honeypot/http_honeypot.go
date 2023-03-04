@@ -50,7 +50,7 @@ func catchAll(w http.ResponseWriter, req *http.Request) {
 
 	log.Log(data)
 
-	if data.Path != "/" || data.Body != "" {
+	if (data.Path != "/" && data.Path != "/favicon.ico") || data.Body != "" {
 		reporting.ReportIp(reporting.IpReport{
 			Service: "http",
 			Ip:      data.IpAddress(),

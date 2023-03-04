@@ -108,7 +108,7 @@ func main() {
 		Service: &serviceName,
 	}
 
-	l, err := net.Listen("tcp", ":23")
+	l, err := net.Listen("tcp", ":21")
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Error opening socket: %s", err.Error()))
 	}
