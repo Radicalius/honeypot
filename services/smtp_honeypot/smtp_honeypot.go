@@ -77,7 +77,7 @@ func main() {
 		Service: &serviceName,
 	}
 
-	l, err := net.Listen("tcp", ":25")
+	l, err := net.Listen("tcp", ":587")
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Error opening socket: %s", err.Error()))
 	}
