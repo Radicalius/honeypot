@@ -38,6 +38,10 @@ func AbuseIpDbReport(report IpReport) {
 		abuseIpDbCategories = "18,23"
 	} else if report.Service == "ftp" {
 		abuseIpDbCategories = "5,18"
+	} else if report.Service == "dns" {
+		abuseIpDbCategories = "2"
+	} else if report.Service == "smtp" {
+		abuseIpDbCategories = "11"
 	}
 
 	comment, err := json.Marshal(report.Data)
