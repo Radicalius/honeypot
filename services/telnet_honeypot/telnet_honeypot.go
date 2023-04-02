@@ -33,7 +33,7 @@ var procMounts []byte
 var elf []byte
 
 func handleRequest(conn net.Conn) {
-	state := "username"
+	state := ""
 
 	var username string
 	var password string
@@ -47,7 +47,7 @@ func handleRequest(conn net.Conn) {
 			conn.Write([]byte("Username: "))
 		} else if state == "password" {
 			conn.Write([]byte("Password: "))
-		} else {
+		} else if state != "" {
 			conn.Write([]byte("/ # "))
 		}
 
@@ -63,7 +63,10 @@ func handleRequest(conn net.Conn) {
 
 		dataStr := string(data[:n-1])
 
-		if state == "username" {
+		if state == "" {
+			state = "username"
+			continue
+		} else if state == "username" {
 			username = dataStr
 			state = "password"
 		} else if state == "password" {
